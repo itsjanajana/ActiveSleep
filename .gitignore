@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+data/processed/
+results/
+*.npz
+*.pt
+.DS_Store
