@@ -1,0 +1,66 @@
+# Base configuration. Dataset/experiment YAMLs are merged on top of this,
+# then any CLI key=value overrides. Everything here is a default.
+
+seed: 1
+
+# ---- signal / epoching (must match across datasets for cross-dataset eval) ----
+signal:
+  fs: 100                 # common resample rate (Hz)
+  epoch_sec: 30           # sleep-staging epoch length
+  patch_sec: 1.0          # -> P = epoch_sec / patch_sec patches per epoch
+  l_freq: 0.3             # bandpass low (Hz)
+  h_freq: 35.0            # bandpass high (Hz)
+  notch: null             # e.g. 50 or 60; null disables
+  norm: epoch             # backbone input normalization: epoch | patch | none
+  summary_type: bandpower # policy "cheap glance": bandpower (D=7) | raw (downsampled)
+  raw_summary_len: 16      # only used when summary_type == raw
+  wake_trim_min: 30       # crop Wake to +/- this many minutes around the sleep period
+
+# ---- dataset / dataloader ----
+data:
+  processed_dir: null     # set by dataset yaml (output of a prepare_*.py)
+  context: 11             # K consecutive epochs per sample (odd; center is predicted)
+  preload: true           # load all subject arrays into RAM (Sleep-EDF fits easily)
+  batch_size: 64
+  num_workers: 4
+
+# ---- model ----
+model:
+  d_model: 128
+  patch_layers: 2
+  epoch_layers: 2
+  n_heads: 4
+  dropout: 0.1
+  crossview: false        # cross-view contrastive alignment (MC2SleepNet-style)
+  crossview_full_epoch: true   # spectrogram from full epoch (proxy) vs selected patches only
+  stft_n_fft: 256
+  cap_granularity: epoch  # epoch | patch  (head is always built; unused without CAP labels)
+  policy_hidden: 64
+  policy_tau: 1.0
+  policy_gumbel: false
+
+# ---- acquisition budget ----
+budget:
+  target_patches: 6       # B patches kept per epoch at the tightened budget
+  eval_ratios: [1.0, 0.5, 0.2, 0.1, 0.05]   # performance-budget sweep points
+
+# ---- loss weights ----
+loss:
+  lambda_cap: 0.0         # CAP multi-task weight (cap.yaml raises this)
+  alpha_contrast: 0.1     # InfoNCE weight (used only if model.crossview)
+  beta_stability: 0.05    # acquisition stability / anti-collapse weight
+  stability_entropy_w: 0.1
+  contrast_temp: 0.1
+
+# ---- training ----
+train:
+  epochs: 40
+  lr: 0.0003
+  weight_decay: 0.0001
+  grad_clip: 1.0
+  amp: true
+  phase1_frac: 0.15       # full-signal staging warmup
+  phase2_frac: 0.45       # learned acquisition + budget anneal + stability (cumulative end)
+  # phase3 = remainder: + contrastive + CAP
+  ckpt_dir: results/checkpoints
+  log_dir: results/logs
