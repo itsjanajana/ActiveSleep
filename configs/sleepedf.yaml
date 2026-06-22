@@ -1,0 +1,18 @@
+# Sleep-EDF Expanded. Point raw_root at the extracted dataset directory that
+# contains sleep-cassette/ and sleep-telemetry/.
+
+dataset_name: sleepedf
+
+sleepedf:
+  raw_root: /path/to/sleep-edf-database-expanded-1.0.0
+  channel: "EEG Fpz-Cz"        # primary single channel; fails loudly if absent
+  cohorts: [cassette]          # any of: cassette, telemetry
+  subjects: all                # "all", or explicit list of subject ids e.g. ["SC400","SC401"]
+                               # convenience aliases: "edf20" (cassette subjects 00-19),
+                               # "edf78" (all cassette subjects)
+  out_dir: data/processed/sleepedf
+
+# After prepare_sleepedf.py, train with:
+#   data.processed_dir = data/processed/sleepedf
+data:
+  processed_dir: data/processed/sleepedf

@@ -1,0 +1,23 @@
+# CAP Sleep Database. Placeholder paths only — fill raw_root once downloaded,
+# run scripts/prepare_cap.py, then train with this config. No code changes needed:
+# the model already carries a CAP head and the trainer already does the masked
+# multi-task loss; this file just turns it on.
+
+dataset_name: cap
+
+cap:
+  raw_root: /path/to/cap-sleep-database-1.0.0
+  # Channel priority: first present in a recording is used; the choice is recorded
+  # per-subject in the npz (channel mismatch across recordings is a real domain shift).
+  channel_priority: ["C4-A1", "C3-A2", "C4A1", "C3A2", "Fp2-F4", "F4-C4"]
+  subjects: all                # "all" or explicit list of stems e.g. ["n1","n2"]
+  out_dir: data/processed/cap
+
+data:
+  processed_dir: data/processed/cap
+
+# Turn on microstructure supervision.
+model:
+  cap_granularity: patch       # epoch | patch  (patch directly steers acquisition)
+loss:
+  lambda_cap: 0.3

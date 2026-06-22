@@ -1,0 +1,19 @@
+# Experiment-level overrides. Merge this last to flip ablation switches without
+# touching base.yaml. Example:
+#   python scripts/train.py --config configs/base.yaml configs/sleepedf.yaml configs/experiment.yaml
+
+# Acquisition / budget
+budget:
+  target_patches: 6
+
+# Ablation toggles (each maps to a row in the ablation table)
+model:
+  crossview: true          # with/without cross-view contrastive alignment
+loss:
+  beta_stability: 0.05     # set 0.0 to ablate stability regularization
+  lambda_cap: 0.0          # raised by cap.yaml when CAP is in use
+
+# Patch granularity ablation (0.5 / 1.0 / 2.0 s). Changing this requires re-running
+# the relevant prepare_*.py because patches are cached.
+signal:
+  patch_sec: 1.0
